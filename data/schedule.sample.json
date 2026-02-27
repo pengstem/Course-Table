@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "meta": {
+    "termName": "",
+    "timezone": "",
+    "updatedAt": ""
+  },
+  "courses": [
+    {
+      "id": "math-001",
+      "name": "Advanced Mathematics",
+      "location": "A101",
+      "teacher": "Teacher Name",
+      "weekday": 1,
+      "startPeriod": 1,
+      "endPeriod": 2,
+      "weeksRule": {
+        "startWeek": 1,
+        "endWeek": 16,
+        "parity": "all",
+        "skipWeeks": [8],
+        "extraWeeks": []
+      },
+      "exceptions": [
+        {
+          "date": "2026-03-09",
+          "action": "cancel",
+          "note": "Holiday"
+        }
+      ]
+    }
+  ]
+}

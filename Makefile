@@ -18,7 +18,7 @@ build: clean
 
 pack: build
 	mkdir -p $(DIST_DIR)
-	cd $(BUILD_DIR) && zip -rq ../../$(ZIP_PATH) .
+	cd $(BUILD_DIR) && (command -v zip >/dev/null 2>&1 && zip -rq ../../$(ZIP_PATH) . || bsdtar -a -cf ../../$(ZIP_PATH) .)
 	@echo "Created package: $(ZIP_PATH)"
 
 install-local: build

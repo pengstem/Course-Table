@@ -2,7 +2,7 @@
   "uuid": "course-table@pengstem",
   "name": "Course Table",
   "description": "Top bar course schedule, reminders, and quick search",
-  "shell-version": ["49"],
+  "shell-version": ["49", "49.4"],
   "settings-schema": "org.gnome.shell.extensions.course-table",
   "url": "https://github.com/pengstem/Course-Table",
   "version": 1

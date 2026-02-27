@@ -5,5 +5,5 @@
   "shell-version": ["49", "49.4"],
   "settings-schema": "org.gnome.shell.extensions.course-table",
   "url": "https://github.com/pengstem/Course-Table",
-  "version": 1
+  "version": 2
 }

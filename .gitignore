@@ -1,0 +1,19 @@
+# Build artifacts
+build/
+dist/
+out/
+
+# Extension package
+*.zip
+
+# Node
+node_modules/
+coverage/
+
+# Local data
+.tmp/
+
+# OS/editor
+.DS_Store
+*.swp
+*.swo

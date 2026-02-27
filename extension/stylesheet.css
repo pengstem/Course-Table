@@ -1,7 +1,147 @@
-.course-table-heading {
+/* === Panel Indicator === */
+.ct-panel-box {
+  spacing: 6px;
+}
+
+.ct-panel-label {
   font-weight: 700;
 }
 
-.course-table-muted {
-  opacity: 0.8;
+/* === Section Headings === */
+.ct-section-heading {
+  spacing: 8px;
+  padding: 4px 0;
+}
+
+.ct-section-heading-label {
+  font-weight: 700;
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.ct-section-heading-icon {
+  icon-size: 16px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* === Next Class Card === */
+.ct-next-card {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 4px 0 8px 0;
+}
+
+.ct-next-name {
+  font-weight: 700;
+  font-size: 1.2em;
+  margin-bottom: 4px;
+}
+
+.ct-next-detail {
+  font-size: 0.95em;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 8px;
+}
+
+.ct-next-countdown {
+  background-color: rgba(99, 155, 255, 0.25);
+  color: rgba(150, 200, 255, 1);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-weight: 700;
+  font-size: 0.9em;
+}
+
+/* === Course Row (Today) === */
+.ct-course-row {
+  spacing: 10px;
+  padding: 2px 0;
+}
+
+.ct-time-col {
+  min-width: 110px;
+  font-size: 0.95em;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.ct-name-col {
+  font-size: 0.95em;
+}
+
+.ct-location-col {
+  min-width: 60px;
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Status dots */
+.ct-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  margin: 6px 0;
+}
+
+.ct-status-dot-active {
+  background-color: rgba(80, 220, 100, 1);
+}
+
+.ct-status-dot-upcoming {
+  background-color: rgba(99, 155, 255, 1);
+}
+
+.ct-status-dot-past {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+/* === Summary Bar === */
+.ct-summary-bar {
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 2px 0;
+}
+
+/* === Search === */
+.ct-search-entry {
+  border-radius: 10px;
+  padding: 6px 12px;
+  margin: 4px 0;
+}
+
+/* === Weekday Badge (All Courses) === */
+.ct-weekday-badge {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.85em;
+  font-weight: 700;
+  min-width: 36px;
+  text-align: center;
+}
+
+/* === Action Buttons === */
+.ct-action-row {
+  spacing: 12px;
+  padding: 4px 0;
+}
+
+.ct-action-btn {
+  spacing: 6px;
+}
+
+.ct-action-btn-icon {
+  icon-size: 14px;
+}
+
+.ct-action-btn-label {
+  font-size: 0.95em;
+}
+
+/* === Empty / No-data message === */
+.ct-empty-message {
+  font-size: 0.95em;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  padding: 4px 0;
 }

@@ -80,6 +80,21 @@ function buildAllCourseRows(schedule, periodTimes) {
     });
 }
 
+/**
+ * Determine the status of a course occurrence relative to now.
+ * Returns 'active' if currently in session, 'upcoming' if not yet started, 'past' if ended.
+ */
+function courseStatus(occurrence, now) {
+    const nowMs = now.getTime();
+    if (nowMs >= occurrence.startDateTime.getTime() && nowMs < occurrence.endDateTime.getTime())
+        return 'active';
+
+    if (nowMs < occurrence.startDateTime.getTime())
+        return 'upcoming';
+
+    return 'past';
+}
+
 const CourseIndicator = GObject.registerClass(
 class CourseIndicator extends PanelMenu.Button {
     _init(onRefresh, onOpenPreferences) {
@@ -90,14 +105,243 @@ class CourseIndicator extends PanelMenu.Button {
         this._searchText = '';
         this._lastState = null;
 
+        // Panel indicator: icon + label
+        const panelBox = new St.BoxLayout({
+            style_class: 'ct-panel-box',
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+
+        const panelIcon = new St.Icon({
+            icon_name: 'appointment-symbolic',
+            style_class: 'system-status-icon',
+        });
+
         this._label = new St.Label({
             text: 'Course',
             y_align: Clutter.ActorAlign.CENTER,
-            style_class: 'course-table-heading',
+            style_class: 'ct-panel-label',
         });
 
-        this.add_child(this._label);
+        panelBox.add_child(panelIcon);
+        panelBox.add_child(this._label);
+        this.add_child(panelBox);
     }
+
+    // ── UI Builder Helpers ─────────────────────────────────────────
+
+    _createSectionHeading(text, iconName) {
+        const item = new PopupMenu.PopupBaseMenuItem({
+            reactive: false,
+            can_focus: false,
+        });
+
+        const box = new St.BoxLayout({
+            style_class: 'ct-section-heading',
+            y_align: Clutter.ActorAlign.CENTER,
+        });
+
+        if (iconName) {
+            box.add_child(new St.Icon({
+                icon_name: iconName,
+                style_class: 'ct-section-heading-icon',
+            }));
+        }
+
+        box.add_child(new St.Label({
+            text,
+            style_class: 'ct-section-heading-label',
+            y_align: Clutter.ActorAlign.CENTER,
+        }));
+
+        item.add_child(box);
+        return item;
+    }
+
+    _createNextClassCard(nextOccurrence) {
+        const item = new PopupMenu.PopupBaseMenuItem({
+            reactive: false,
+            can_focus: false,
+        });
+
+        const card = new St.BoxLayout({
+            style_class: 'ct-next-card',
+            vertical: true,
+            x_expand: true,
+        });
+
+        card.add_child(new St.Label({
+            text: nextOccurrence.name,
+            style_class: 'ct-next-name',
+        }));
+
+        const detail = `${nextOccurrence.startText} - ${nextOccurrence.endText}  ·  ${nextOccurrence.location}`;
+        card.add_child(new St.Label({
+            text: detail,
+            style_class: 'ct-next-detail',
+        }));
+
+        const badgeBox = new St.BoxLayout();
+        badgeBox.add_child(new St.Label({
+            text: `in ${formatDuration(nextOccurrence.minutesUntilStart)}`,
+            style_class: 'ct-next-countdown',
+        }));
+        card.add_child(badgeBox);
+
+        item.add_child(card);
+        return item;
+    }
+
+    _createCourseRow(occurrence, now) {
+        const item = new PopupMenu.PopupBaseMenuItem({
+            reactive: false,
+            can_focus: false,
+        });
+
+        const row = new St.BoxLayout({
+            style_class: 'ct-course-row',
+            y_align: Clutter.ActorAlign.CENTER,
+            x_expand: true,
+        });
+
+        // Status dot
+        const status = courseStatus(occurrence, now);
+        const dotStyleClass = `ct-status-dot ct-status-dot-${status}`;
+        row.add_child(new St.Widget({style_class: dotStyleClass}));
+
+        // Time column
+        row.add_child(new St.Label({
+            text: `${occurrence.startText} - ${occurrence.endText}`,
+            style_class: 'ct-time-col',
+            y_align: Clutter.ActorAlign.CENTER,
+        }));
+
+        // Name column (expands)
+        row.add_child(new St.Label({
+            text: occurrence.name,
+            style_class: 'ct-name-col',
+            x_expand: true,
+            y_align: Clutter.ActorAlign.CENTER,
+        }));
+
+        // Location column
+        row.add_child(new St.Label({
+            text: occurrence.location,
+            style_class: 'ct-location-col',
+            y_align: Clutter.ActorAlign.CENTER,
+        }));
+
+        item.add_child(row);
+        return item;
+    }
+
+    _createSearchRow(row) {
+        const item = new PopupMenu.PopupBaseMenuItem({
+            reactive: false,
+            can_focus: false,
+        });
+
+        const rowBox = new St.BoxLayout({
+            style_class: 'ct-course-row',
+            y_align: Clutter.ActorAlign.CENTER,
+            x_expand: true,
+        });
+
+        // Weekday badge
+        rowBox.add_child(new St.Label({
+            text: weekdayLabel(row.weekday),
+            style_class: 'ct-weekday-badge',
+            y_align: Clutter.ActorAlign.CENTER,
+        }));
+
+        // Time column
+        rowBox.add_child(new St.Label({
+            text: `${row.startText} - ${row.endText}`,
+            style_class: 'ct-time-col',
+            y_align: Clutter.ActorAlign.CENTER,
+        }));
+
+        // Name column
+        rowBox.add_child(new St.Label({
+            text: row.name,
+            style_class: 'ct-name-col',
+            x_expand: true,
+            y_align: Clutter.ActorAlign.CENTER,
+        }));
+
+        // Location column
+        rowBox.add_child(new St.Label({
+            text: row.location,
+            style_class: 'ct-location-col',
+            y_align: Clutter.ActorAlign.CENTER,
+        }));
+
+        item.add_child(rowBox);
+        return item;
+    }
+
+    _createSummaryBar(stats) {
+        const item = new PopupMenu.PopupBaseMenuItem({
+            reactive: false,
+            can_focus: false,
+        });
+
+        const text = `${stats.totalCourses} courses  ·  ${stats.todayConflicts} conflicts  ·  ${weekdayLabel(stats.busiestWeekday)} (${stats.busiestCount})`;
+        item.add_child(new St.Label({
+            text,
+            style_class: 'ct-summary-bar',
+            x_expand: true,
+        }));
+
+        return item;
+    }
+
+    _createActionButtons() {
+        const item = new PopupMenu.PopupBaseMenuItem({
+            reactive: false,
+            can_focus: false,
+        });
+
+        const row = new St.BoxLayout({
+            style_class: 'ct-action-row',
+            x_expand: true,
+        });
+
+        // Refresh button
+        const refreshBtn = new St.Button({
+            style_class: 'ct-action-btn button',
+            can_focus: true,
+            x_expand: true,
+        });
+        const refreshBox = new St.BoxLayout({style_class: 'ct-action-btn', x_align: Clutter.ActorAlign.CENTER});
+        refreshBox.add_child(new St.Icon({icon_name: 'view-refresh-symbolic', style_class: 'ct-action-btn-icon'}));
+        refreshBox.add_child(new St.Label({text: 'Refresh', style_class: 'ct-action-btn-label', y_align: Clutter.ActorAlign.CENTER}));
+        refreshBtn.set_child(refreshBox);
+        refreshBtn.connect('clicked', () => {
+            this._onRefresh();
+        });
+
+        // Settings button
+        const settingsBtn = new St.Button({
+            style_class: 'ct-action-btn button',
+            can_focus: true,
+            x_expand: true,
+        });
+        const settingsBox = new St.BoxLayout({style_class: 'ct-action-btn', x_align: Clutter.ActorAlign.CENTER});
+        settingsBox.add_child(new St.Icon({icon_name: 'emblem-system-symbolic', style_class: 'ct-action-btn-icon'}));
+        settingsBox.add_child(new St.Label({text: 'Settings', style_class: 'ct-action-btn-label', y_align: Clutter.ActorAlign.CENTER}));
+        settingsBtn.set_child(settingsBox);
+        settingsBtn.connect('clicked', () => {
+            this._onOpenPreferences();
+            this.menu.close();
+        });
+
+        row.add_child(refreshBtn);
+        row.add_child(settingsBtn);
+        item.add_child(row);
+        return item;
+    }
+
+    // ── Filtering ──────────────────────────────────────────────────
 
     _filteredRows(rows) {
         if (!this._searchText)
@@ -119,10 +363,11 @@ class CourseIndicator extends PanelMenu.Button {
 
         const entry = new St.Entry({
             text: this._searchText,
-            hint_text: 'Search course / location / teacher',
+            hint_text: 'Search course / location / teacher\u2026',
             can_focus: true,
             x_expand: true,
             track_hover: true,
+            style_class: 'ct-search-entry',
         });
 
         entry.get_clutter_text().connect('text-changed', () => {
@@ -139,115 +384,92 @@ class CourseIndicator extends PanelMenu.Button {
         const filtered = this._filteredRows(rows);
 
         if (filtered.length === 0) {
-            this.menu.addMenuItem(new PopupMenu.PopupMenuItem('No course matched current keyword.', {
+            const emptyItem = new PopupMenu.PopupBaseMenuItem({
                 reactive: false,
                 can_focus: false,
+            });
+            emptyItem.add_child(new St.Label({
+                text: 'No course matched current keyword.',
+                style_class: 'ct-empty-message',
             }));
+            this.menu.addMenuItem(emptyItem);
             return;
         }
 
         filtered.forEach(row => {
-            const title = `[${weekdayLabel(row.weekday)}] ${row.startText}-${row.endText}  ${row.name}`;
-            this.menu.addMenuItem(new PopupMenu.PopupMenuItem(title, {
-                reactive: false,
-                can_focus: false,
-            }));
+            this.menu.addMenuItem(this._createSearchRow(row));
         });
     }
+
+    // ── Main Render ────────────────────────────────────────────────
 
     render(state) {
         this._lastState = state;
         this.menu.removeAll();
 
-        const {nextOccurrence, todaySummary, allCourses, stats} = state;
+        const {nextOccurrence, todaySummary, allCourses, stats, now} = state;
 
+        // Panel label
         if (nextOccurrence)
             this._label.set_text(`Next ${nextOccurrence.startText}`);
         else
             this._label.set_text('No Class');
 
-        const nextHeading = new PopupMenu.PopupMenuItem('Next Class', {
-            reactive: false,
-            can_focus: false,
-        });
-        this.menu.addMenuItem(nextHeading);
+        // ── Next Class section ──
+        this.menu.addMenuItem(this._createSectionHeading('Next Class', 'alarm-symbolic'));
 
         if (nextOccurrence) {
-            const subtitle = `${nextOccurrence.startText}-${nextOccurrence.endText}  ${nextOccurrence.name}  (in ${formatDuration(nextOccurrence.minutesUntilStart)})`;
-            this.menu.addMenuItem(new PopupMenu.PopupMenuItem(subtitle, {
-                reactive: false,
-                can_focus: false,
-            }));
+            this.menu.addMenuItem(this._createNextClassCard(nextOccurrence));
         } else {
-            this.menu.addMenuItem(new PopupMenu.PopupMenuItem('No upcoming class in next 4 weeks.', {
+            const emptyItem = new PopupMenu.PopupBaseMenuItem({
                 reactive: false,
                 can_focus: false,
+            });
+            emptyItem.add_child(new St.Label({
+                text: 'No upcoming class in next 4 weeks.',
+                style_class: 'ct-empty-message',
             }));
+            this.menu.addMenuItem(emptyItem);
         }
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        const todayHeading = new PopupMenu.PopupMenuItem(`Today (${todaySummary.count})`, {
-            reactive: false,
-            can_focus: false,
-        });
-        this.menu.addMenuItem(todayHeading);
+        // ── Today section ──
+        this.menu.addMenuItem(this._createSectionHeading(`Today (${todaySummary.count})`, 'view-list-symbolic'));
 
         if (todaySummary.courses.length === 0) {
-            this.menu.addMenuItem(new PopupMenu.PopupMenuItem('No classes today.', {
+            const emptyItem = new PopupMenu.PopupBaseMenuItem({
                 reactive: false,
                 can_focus: false,
+            });
+            emptyItem.add_child(new St.Label({
+                text: 'No classes today.',
+                style_class: 'ct-empty-message',
             }));
+            this.menu.addMenuItem(emptyItem);
         } else {
             todaySummary.courses.forEach(item => {
-                const title = `${item.startText}-${item.endText}  ${item.name}`;
-                this.menu.addMenuItem(new PopupMenu.PopupMenuItem(title, {
-                    reactive: false,
-                    can_focus: false,
-                }));
+                this.menu.addMenuItem(this._createCourseRow(item, now));
             });
         }
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        const summaryHeading = new PopupMenu.PopupMenuItem('Summary', {
-            reactive: false,
-            can_focus: false,
-        });
-        this.menu.addMenuItem(summaryHeading);
-        this.menu.addMenuItem(new PopupMenu.PopupMenuItem(`Total courses: ${stats.totalCourses}`, {
-            reactive: false,
-            can_focus: false,
-        }));
-        this.menu.addMenuItem(new PopupMenu.PopupMenuItem(`Today conflicts: ${stats.todayConflicts}`, {
-            reactive: false,
-            can_focus: false,
-        }));
-        this.menu.addMenuItem(new PopupMenu.PopupMenuItem(`Busiest weekday: ${weekdayLabel(stats.busiestWeekday)} (${stats.busiestCount})`, {
-            reactive: false,
-            can_focus: false,
-        }));
+        // ── Summary bar ──
+        this.menu.addMenuItem(this._createSummaryBar(stats));
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        const searchHeading = new PopupMenu.PopupMenuItem('All Courses', {
-            reactive: false,
-            can_focus: false,
-        });
-        this.menu.addMenuItem(searchHeading);
+        // ── All Courses section ──
+        this.menu.addMenuItem(this._createSectionHeading('All Courses', 'system-search-symbolic'));
 
         this._addSearchEntry();
         this._addSearchRows(allCourses);
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        const refreshItem = new PopupMenu.PopupMenuItem('Refresh');
-        refreshItem.connect('activate', () => this._onRefresh());
-        this.menu.addMenuItem(refreshItem);
-
-        const settingsItem = new PopupMenu.PopupMenuItem('Open Settings');
-        settingsItem.connect('activate', () => this._onOpenPreferences());
-        this.menu.addMenuItem(settingsItem);
+        // ── Action buttons ──
+        this.menu.addMenuItem(this._createActionButtons());
     }
 });
 
@@ -329,6 +551,7 @@ export default class CourseTableExtension extends Extension {
             todaySummary,
             allCourses,
             stats,
+            now,
         });
     }
 }

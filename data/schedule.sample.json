@@ -28,6 +28,23 @@
           "note": "Holiday"
         }
       ]
+    },
+    {
+      "id": "english-001",
+      "name": "English",
+      "location": "C105",
+      "teacher": "Teacher Name",
+      "weekdays": [2, 4],
+      "startPeriod": 3,
+      "endPeriod": 4,
+      "weeksRule": {
+        "startWeek": 1,
+        "endWeek": 16,
+        "parity": "all",
+        "skipWeeks": [],
+        "extraWeeks": []
+      },
+      "exceptions": []
     }
   ]
 }

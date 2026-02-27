@@ -36,12 +36,12 @@ export function loadScheduleFromPath(filePath) {
     if (!file.query_exists(null))
         return makeDefaultSchedule();
 
-    const [ok, bytes] = file.load_bytes(null);
+    const [ok, contents] = file.load_contents(null);
     if (!ok)
         return makeDefaultSchedule();
 
     try {
-        const raw = JSON.parse(new TextDecoder().decode(bytes.get_data()));
+        const raw = JSON.parse(new TextDecoder().decode(contents));
         return normalizeSchedule(raw);
     } catch (_error) {
         return makeDefaultSchedule();

@@ -246,3 +246,17 @@ export function summarizeToday(schedule, now, options = {}) {
         courses,
     };
 }
+
+export function getOccurrencesInRange(schedule, startDate, days, options = {}) {
+    const results = [];
+    const base = normalizeDate(startDate);
+    const span = Math.max(1, Number.isInteger(days) ? days : 1);
+
+    for (let offset = 0; offset < span; offset++) {
+        const date = new Date(base.getTime() + offset * MILLISECONDS_PER_DAY);
+        const dayItems = getCoursesForDate(schedule, date, options);
+        results.push(...dayItems);
+    }
+
+    return results.sort((a, b) => a.startDateTime.getTime() - b.startDateTime.getTime());
+}

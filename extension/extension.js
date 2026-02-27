@@ -10,7 +10,8 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import {DEFAULT_PERIOD_TIMES} from './lib/constants.js';
-import {findNextOccurrence, summarizeToday} from './lib/scheduleEngine.js';
+import {findNextOccurrence, getOccurrencesInRange, summarizeToday} from './lib/scheduleEngine.js';
+import {ReminderScheduler} from './lib/reminders.js';
 import {loadScheduleFromPath} from './lib/storage.js';
 
 function parsePeriodTimesFromSettings(raw) {
@@ -232,6 +233,7 @@ class CourseIndicator extends PanelMenu.Button {
 export default class CourseTableExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
+        this._reminderScheduler = new ReminderScheduler((title, body) => Main.notify(title, body));
 
         this._indicator = new CourseIndicator(
             () => this._refreshView(),
@@ -265,6 +267,7 @@ export default class CourseTableExtension extends Extension {
         }
 
         this._settings = null;
+        this._reminderScheduler = null;
 
         if (this._indicator) {
             this._indicator.destroy();
@@ -291,6 +294,13 @@ export default class CourseTableExtension extends Extension {
         const nextOccurrence = findNextOccurrence(schedule, now, options);
         const todaySummary = summarizeToday(schedule, now, options);
         const allCourses = buildAllCourseRows(schedule, periodTimes);
+        const rangeOccurrences = getOccurrencesInRange(schedule, now, 3, options);
+
+        this._reminderScheduler.updateConfig({
+            enabled: this._settings.get_boolean('notify-enabled'),
+            minutesBefore: this._settings.get_int('notify-minutes-before'),
+        });
+        this._reminderScheduler.process(now, rangeOccurrences);
 
         this._indicator.render({
             nextOccurrence,

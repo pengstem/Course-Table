@@ -9,11 +9,11 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
-import {buildScheduleStats} from './lib/analysis.js';
-import {DEFAULT_PERIOD_TIMES} from './lib/constants.js';
-import {findNextOccurrence, getOccurrencesInRange, summarizeToday} from './lib/scheduleEngine.js';
-import {ReminderScheduler} from './lib/reminders.js';
-import {loadScheduleFromPath} from './lib/storage.js';
+import {buildScheduleStats} from './analysis.js';
+import {DEFAULT_PERIOD_TIMES} from './constants.js';
+import {findNextOccurrence, getOccurrencesInRange, summarizeToday} from './scheduleEngine.js';
+import {ReminderScheduler} from './reminders.js';
+import {loadScheduleFromPath} from './storage.js';
 
 function parsePeriodTimesFromSettings(raw) {
     if (!raw)

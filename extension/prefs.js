@@ -3,9 +3,9 @@ import Gtk from 'gi://Gtk';
 
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import {DEFAULT_PERIOD_TIMES} from './lib/constants.js';
-import {normalizeSchedule, validateSchedule} from './lib/scheduleSchema.js';
-import {loadScheduleFromPath, resolveSchedulePath, saveScheduleToPath} from './lib/storage.js';
+import {DEFAULT_PERIOD_TIMES} from './constants.js';
+import {normalizeSchedule, validateSchedule} from './scheduleSchema.js';
+import {loadScheduleFromPath, resolveSchedulePath, saveScheduleToPath} from './storage.js';
 
 function parsePeriodTimes(raw) {
     if (!raw)

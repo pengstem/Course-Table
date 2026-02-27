@@ -49,6 +49,35 @@ function formatDuration(minutes) {
     return remain > 0 ? `${hours}h ${remain}m` : `${hours}h`;
 }
 
+function weekdayLabel(weekday) {
+    return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][weekday - 1] ?? '?';
+}
+
+function buildAllCourseRows(schedule, periodTimes) {
+    const courses = Array.isArray(schedule?.courses) ? schedule.courses : [];
+
+    const rows = courses.map(course => {
+        const startText = periodTimes[String(course.startPeriod)]?.start ?? `P${course.startPeriod}`;
+        const endText = periodTimes[String(course.endPeriod)]?.end ?? `P${course.endPeriod}`;
+
+        return {
+            name: course.name,
+            location: course.location,
+            teacher: course.teacher,
+            weekday: course.weekday,
+            startText,
+            endText,
+        };
+    });
+
+    return rows.sort((a, b) => {
+        if (a.weekday !== b.weekday)
+            return a.weekday - b.weekday;
+
+        return a.startText.localeCompare(b.startText);
+    });
+}
+
 const CourseIndicator = GObject.registerClass(
 class CourseIndicator extends PanelMenu.Button {
     _init(onRefresh, onOpenPreferences) {
@@ -56,6 +85,8 @@ class CourseIndicator extends PanelMenu.Button {
 
         this._onRefresh = onRefresh;
         this._onOpenPreferences = onOpenPreferences;
+        this._searchText = '';
+        this._lastState = null;
 
         this._label = new St.Label({
             text: 'Course',
@@ -66,10 +97,67 @@ class CourseIndicator extends PanelMenu.Button {
         this.add_child(this._label);
     }
 
+    _filteredRows(rows) {
+        if (!this._searchText)
+            return rows.slice(0, 8);
+
+        const key = this._searchText.toLowerCase();
+        return rows.filter(row => {
+            return row.name.toLowerCase().includes(key)
+                || row.location.toLowerCase().includes(key)
+                || row.teacher.toLowerCase().includes(key);
+        }).slice(0, 12);
+    }
+
+    _addSearchEntry() {
+        const inputItem = new PopupMenu.PopupBaseMenuItem({
+            reactive: false,
+            can_focus: false,
+        });
+
+        const entry = new St.Entry({
+            text: this._searchText,
+            hint_text: 'Search course / location / teacher',
+            can_focus: true,
+            x_expand: true,
+            track_hover: true,
+        });
+
+        entry.get_clutter_text().connect('text-changed', () => {
+            this._searchText = entry.get_text().trim();
+            if (this._lastState)
+                this.render(this._lastState);
+        });
+
+        inputItem.add_child(entry);
+        this.menu.addMenuItem(inputItem);
+    }
+
+    _addSearchRows(rows) {
+        const filtered = this._filteredRows(rows);
+
+        if (filtered.length === 0) {
+            this.menu.addMenuItem(new PopupMenu.PopupMenuItem('No course matched current keyword.', {
+                reactive: false,
+                can_focus: false,
+            }));
+            return;
+        }
+
+        filtered.forEach(row => {
+            const title = `[${weekdayLabel(row.weekday)}] ${row.startText}-${row.endText}  ${row.name}`;
+            this.menu.addMenuItem(new PopupMenu.PopupMenuItem(title, {
+                reactive: false,
+                can_focus: false,
+            }));
+        });
+    }
+
     render(state) {
+        this._lastState = state;
         this.menu.removeAll();
 
-        const {nextOccurrence, todaySummary} = state;
+        const {nextOccurrence, todaySummary, allCourses} = state;
 
         if (nextOccurrence)
             this._label.set_text(`Next ${nextOccurrence.startText}`);
@@ -117,6 +205,17 @@ class CourseIndicator extends PanelMenu.Button {
                 }));
             });
         }
+
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+        const searchHeading = new PopupMenu.PopupMenuItem('All Courses', {
+            reactive: false,
+            can_focus: false,
+        });
+        this.menu.addMenuItem(searchHeading);
+
+        this._addSearchEntry();
+        this._addSearchRows(allCourses);
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -191,7 +290,12 @@ export default class CourseTableExtension extends Extension {
 
         const nextOccurrence = findNextOccurrence(schedule, now, options);
         const todaySummary = summarizeToday(schedule, now, options);
+        const allCourses = buildAllCourseRows(schedule, periodTimes);
 
-        this._indicator.render({nextOccurrence, todaySummary});
+        this._indicator.render({
+            nextOccurrence,
+            todaySummary,
+            allCourses,
+        });
     }
 }

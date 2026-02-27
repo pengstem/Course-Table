@@ -9,6 +9,7 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
+import {buildScheduleStats} from './lib/analysis.js';
 import {DEFAULT_PERIOD_TIMES} from './lib/constants.js';
 import {findNextOccurrence, getOccurrencesInRange, summarizeToday} from './lib/scheduleEngine.js';
 import {ReminderScheduler} from './lib/reminders.js';
@@ -158,7 +159,7 @@ class CourseIndicator extends PanelMenu.Button {
         this._lastState = state;
         this.menu.removeAll();
 
-        const {nextOccurrence, todaySummary, allCourses} = state;
+        const {nextOccurrence, todaySummary, allCourses, stats} = state;
 
         if (nextOccurrence)
             this._label.set_text(`Next ${nextOccurrence.startText}`);
@@ -206,6 +207,26 @@ class CourseIndicator extends PanelMenu.Button {
                 }));
             });
         }
+
+        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
+        const summaryHeading = new PopupMenu.PopupMenuItem('Summary', {
+            reactive: false,
+            can_focus: false,
+        });
+        this.menu.addMenuItem(summaryHeading);
+        this.menu.addMenuItem(new PopupMenu.PopupMenuItem(`Total courses: ${stats.totalCourses}`, {
+            reactive: false,
+            can_focus: false,
+        }));
+        this.menu.addMenuItem(new PopupMenu.PopupMenuItem(`Today conflicts: ${stats.todayConflicts}`, {
+            reactive: false,
+            can_focus: false,
+        }));
+        this.menu.addMenuItem(new PopupMenu.PopupMenuItem(`Busiest weekday: ${weekdayLabel(stats.busiestWeekday)} (${stats.busiestCount})`, {
+            reactive: false,
+            can_focus: false,
+        }));
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -295,6 +316,7 @@ export default class CourseTableExtension extends Extension {
         const todaySummary = summarizeToday(schedule, now, options);
         const allCourses = buildAllCourseRows(schedule, periodTimes);
         const rangeOccurrences = getOccurrencesInRange(schedule, now, 3, options);
+        const stats = buildScheduleStats(schedule, todaySummary.courses);
 
         this._reminderScheduler.updateConfig({
             enabled: this._settings.get_boolean('notify-enabled'),
@@ -306,6 +328,7 @@ export default class CourseTableExtension extends Extension {
             nextOccurrence,
             todaySummary,
             allCourses,
+            stats,
         });
     }
 }

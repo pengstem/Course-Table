@@ -31,5 +31,10 @@
       <summary>Display mode</summary>
       <description>Primary display mode for the panel menu.</description>
     </key>
+    <key name="refresh-interval" type="i">
+      <default>30</default>
+      <summary>Refresh interval in seconds</summary>
+      <description>How often to refresh the panel indicator and menu data.</description>
+    </key>
   </schema>
 </schemalist>

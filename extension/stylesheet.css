@@ -21,12 +21,25 @@
 
 .ct-section-heading-icon {
   icon-size: 16px;
-  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Per-section heading icon colors */
+.ct-section-icon-next {
+  color: rgba(255, 170, 50, 0.95);
+}
+
+.ct-section-icon-today {
+  color: rgba(120, 210, 130, 0.95);
+}
+
+.ct-section-icon-all {
+  color: rgba(150, 180, 255, 0.95);
 }
 
 /* === Next Class Card === */
 .ct-next-card {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: rgba(255, 170, 50, 0.10);
+  border: 1px solid rgba(255, 170, 50, 0.25);
   border-radius: 12px;
   padding: 14px 16px;
   margin: 4px 0 8px 0;
@@ -35,6 +48,7 @@
 .ct-next-name {
   font-weight: 700;
   font-size: 1.2em;
+  color: rgba(255, 230, 180, 1);
   margin-bottom: 4px;
 }
 
@@ -69,6 +83,12 @@
   font-size: 0.95em;
 }
 
+.ct-name-col-active {
+  font-size: 0.95em;
+  font-weight: 700;
+  color: rgba(130, 240, 150, 1);
+}
+
 .ct-location-col {
   min-width: 60px;
   font-size: 0.9em;
@@ -85,21 +105,45 @@
 
 .ct-status-dot-active {
   background-color: rgba(80, 220, 100, 1);
+  box-shadow: 0 0 6px rgba(80, 220, 100, 0.6);
 }
 
 .ct-status-dot-upcoming {
   background-color: rgba(99, 155, 255, 1);
+  box-shadow: 0 0 6px rgba(99, 155, 255, 0.5);
 }
 
 .ct-status-dot-past {
-  background-color: rgba(255, 255, 255, 0.35);
+  background-color: rgba(255, 255, 255, 0.25);
 }
 
 /* === Summary Bar === */
 .ct-summary-bar {
+  spacing: 8px;
+  padding: 2px 0;
+}
+
+.ct-summary-text {
   font-size: 0.9em;
   color: rgba(255, 255, 255, 0.55);
-  padding: 2px 0;
+}
+
+.ct-summary-num {
+  font-size: 0.9em;
+  font-weight: 700;
+  color: rgba(150, 180, 255, 0.9);
+}
+
+.ct-summary-conflict {
+  font-size: 0.9em;
+  font-weight: 700;
+  color: rgba(255, 120, 100, 0.9);
+}
+
+.ct-summary-conflict-zero {
+  font-size: 0.9em;
+  font-weight: 700;
+  color: rgba(120, 220, 130, 0.9);
 }
 
 /* === Search === */
@@ -111,13 +155,48 @@
 
 /* === Weekday Badge (All Courses) === */
 .ct-weekday-badge {
-  background-color: rgba(255, 255, 255, 0.12);
   border-radius: 6px;
   padding: 2px 8px;
   font-size: 0.85em;
   font-weight: 700;
   min-width: 36px;
   text-align: center;
+}
+
+/* Per-day badge colors */
+.ct-weekday-1 {
+  background-color: rgba(255, 120, 100, 0.22);
+  color: rgba(255, 160, 140, 1);
+}
+
+.ct-weekday-2 {
+  background-color: rgba(255, 180, 60, 0.22);
+  color: rgba(255, 210, 120, 1);
+}
+
+.ct-weekday-3 {
+  background-color: rgba(100, 220, 120, 0.22);
+  color: rgba(140, 240, 160, 1);
+}
+
+.ct-weekday-4 {
+  background-color: rgba(80, 180, 255, 0.22);
+  color: rgba(140, 200, 255, 1);
+}
+
+.ct-weekday-5 {
+  background-color: rgba(180, 130, 255, 0.22);
+  color: rgba(200, 170, 255, 1);
+}
+
+.ct-weekday-6 {
+  background-color: rgba(255, 130, 200, 0.22);
+  color: rgba(255, 170, 220, 1);
+}
+
+.ct-weekday-7 {
+  background-color: rgba(255, 130, 200, 0.22);
+  color: rgba(255, 170, 220, 1);
 }
 
 /* === Action Buttons === */
